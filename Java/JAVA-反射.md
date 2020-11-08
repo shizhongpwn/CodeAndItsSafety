@@ -65,7 +65,36 @@ Class cls = new Class(String); //这在编译器里面是不行的
    } //这就涉及到可能找不到改类，所以要加一个异常，这里是通过一个class的完整类名获得的
    ~~~
 
+注意`Class`类比较和`instanceof`的差别：
 
+~~~java
+				Integer n = new Integer(123);
+        System.out.println(n);
+        boolean b1 = n instanceof Integer; //ture,因为n是Integet类型
+        System.out.println(b1);
+        boolean b2 = n instanceof Number; //ture，因为n是Number类型的子类
+        boolean b3 = n.getClass() == Integer.class; //ture , n.getclass() 返回 Integer.class
+        boolean b4 = n.getClass() == Number.class; //Error , Integet.class != Number.class
+~~~
+
+可以得到一下结论：
+
+* `instanceof`不但匹配指定类型，还匹配指定类型的子类。
+* == 可以精确匹配数据类型
+
+通过`reflection`获得类的基本信息：
+
+~~~java
+System.out.println("Class name: "  + cls.getName());
+        System.out.println("Simple name: " + cls.getSimpleName());
+        if (cls.getPackage() != null) {
+            System.out.println("Package name: " + cls.getPackage().getName());
+        }
+        System.out.println("is interface: " + cls.isInterface());
+        System.out.println("is enum: " + cls.isEnum());
+        System.out.println("is array: " + cls.isArray());
+        System.out.println("is primitive: " + cls.isPrimitive());
+~~~
 
 
 
