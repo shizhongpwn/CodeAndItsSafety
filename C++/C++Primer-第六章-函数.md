@@ -109,6 +109,109 @@ auto func(int i) -> int(*)[10];
 
 作用同上。
 
+## 函数重载
+
+多说一句：注意实参传输给形参的过程中`顶层const`会丢失。
+
+~~~c++
+const string &func(string s1,string s2)
+{
+    return s2;
+}
+const string &func(const string s1,const string s2)
+{
+    return s1;
+}
+~~~
+
+上述就是错误的。
+
+`const_cast和重载`
+
+在函数重载里面，`const_cast`可以帮我们实现很有用的常量转换。
+
+## 内联函数
+
+在函数声明中加上`inline`关键字。
+
+`constexpr`函数是指可以用于常量表达式的函数。其约定如下：
+
+* 函数的返回值和所有形参 的类型都必须是字面值类型
+* 函数体中必须有且只有一个`return`语句。
+* `constexpr`函数被隐式的指定为内联函数。
+
+## 调试帮助（重点）
+
+`assert预处理宏`：头文件`cassert`
+
+`assert`其实是一个预处理变量，行为有点类似内联函数，其使用一个表达式作为它的条件。
+
+~~~c++
+assert(expr);
+~~~
+
+`NDEBUG`预处理变量
+
+`assert`的行为依赖于一个名为`NDEBUG`的预处理变量的状态，如果定义了`NDEBUG`变量，那么`assert`什么也不做，默认状态下没有定义改变量。
+
+~~~C++
+#define NDEBUG  \\这样其实就是关闭了assert
+~~~
+
+## 预处理器定义的重要名字
+
+* 编译器为每个函数都定义了`__func__`变量，这是一个`const char`的静态数组，用于存放函数名字。
+* `__FILE__`存放文件名的字符串的字面值
+* `__LINE__`存放当前行号的整形字面值。
+* `__TIME__`存放文件编译时间的字符串字面值
+* `__DATE__`存放文件编译日期的字符串字面值
+
+## 函数指针
+
+> 这个学过多次，但是经常用，记录一下
+
+~~~c++
+bool (*pf)(string s1,string s2);
+~~~
+
+记得括号不能少，否则就是一个返回值为`bool 指针`的函数。
+
+`返回指向函数的指针`
+
+~~~c++
+using f1 = int(int* ,int); //F是函数类型，不是指针
+using PF = int(*)(int *,int); //PF是指针类型
+~~~
+
+那么我们就可以这样定义一个返回指向函数的指针
+
+~~~c++
+PF func(int); 
+f1 *func(int);
+~~~
+
+还有这样
+
+~~~c++
+auot f1(int) -> int (*)(int *,int);
+~~~
+
+同时可以利用`decltype`
+
+~~~c++
+string::size_type sumlen(const string&,const string&);
+string::size_type larlen(const string&,const string&);
+decltype(sumlen) *getFunc(const string &);
+~~~
+
+我本来好奇为啥返回的不是`指向string::size_type`的指针，后来发现`decltype`返回的是函数类型，那么显示的加上`*`之后就返回的是函数指针了。。。
+
+
+
+
+
+
+
 
 
 
