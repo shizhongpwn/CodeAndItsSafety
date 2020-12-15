@@ -202,9 +202,128 @@ class Link_Screen{
 };
 ~~~
 
+`类之间的友元关系`
 
+~~~c++
+class Screen{
+public:
+    typedef string::size_type pos; //通过把pos定义成public成员可以隐藏Screen的实现细节
+    Screen() = default; //我们提供了一个构造函数，编译器不会自动生成默认的构造函数，如果需要必须显示的声明出来。
+    Screen(pos ht,pos wd,char c):height(ht),width(wd),contents(ht *wd,c){} //cursor成员已经显示的初始化为0
+    char get() const {return contents[cursor];}
+    inline char get(pos ht,pos wd) const ;
+    Screen &move(pos r,pos c);
+    friend class Window_mgr; // 友元
+private:
+    Screen &set(char);
+    Screen &set(pos, pos , char);
+    pos cursor = 0;
+    pos height = 0,width = 0;
+    string  contents;
+};
+class Window_mgr{
+public:
+    using ScreenIndex = vector<Screen>::size_type ;
+    void clear(ScreenIndex);
 
+private:
+    vector<Screen>screens{Screen{24,80,' '}};
+};
+void Window_mgr::clear(ScreenIndex i) {
+    Screen &s = screens[i];
+    s.contents = string(s.height * s.width,' ');
+}
+~~~
 
+可以看到我们在`window_mgr`里面修改了` Screen`类里面的私有成员变量，如果在`Screen`类里面没有进行友元的声明的话，那么是不可能编译成功的。
+
+> 友元关系不存在传递性，如果`Window_mgr`有它自己的友元，则这些友元并不能理所当然的访问screen的权限。
+
+`令成员函数作为友元`
+
+~~~c++
+class Screen{
+	friend void Window_mgr::clear(ScreenIndex);
+};
+~~~
+
+ 程序设计方式：
+
+* 首先定义`Window_mgr`类，其中声明`clean`函数，但是不进行定义。在clean使用Screen成员之前必须声明`Screen`类
+* 定义`Screen`类，并且声明`clean`为友元
+* 定义`clean`函数，此时它才可以使用`Screen`成员。
+
+## 委托构造函数
+
+> C++11开始可以定义所谓的`委托构造函数`
+
+~~~c++
+class Sales_data{
+public:
+    Sales_data(string s,unsigned cnt,double price):bookNo(s),units_sold(cnt),revenue(cnt *price){}
+    //其余构造函数全部委托给另一个构造函数
+    Sales_data():Sales_data("",0,0){}  //定义默认构造函数，委托给上面三个参数逇版本，下面的类似
+    Sales_data(string s) : Sales_data(s,0,0){} //一个参数的构造函数，同样委托给三个参数逇构造函数
+    Sales_data(istream &s):Sales_data(){read(s,*this);} //委托给默认构造函数，当默认构造函数完成之后开始执行构造函数体里面的内容。
+private:
+    string bookNo;
+    unsigned units_sold;
+    double revenue;
+};
+~~~
+
+`默认构造函数的作用`
+
+默认构造函数发生条件：
+
+* 默认初始化
+
+  
+
+* 值初始化
+
+`类类型隐式转换`
+
+~~~c++
+using namespace std;
+class Sales_data{
+public:
+    Sales_data(string s,unsigned cnt,double price):bookNo(s),units_sold(cnt),revenue(cnt *price){}
+    //其余构造函数全部委托给另一个构造函数
+    Sales_data():Sales_data("",0,0){}  //定义默认构造函数，委托给上面三个参数逇版本，下面的类似
+    Sales_data(string s) : Sales_data(s,0,0){} //一个参数的构造函数，同样委托给三个参数逇构造函数
+   // Sales_data(istream &s):Sales_data(){read(s,*this);} //委托给默认构造函数，当默认构造函数完成之后开始执行构造函数体里面的内容。
+    Sales_data& combine(const Sales_data&);
+private:
+    string bookNo;
+    unsigned units_sold;
+    double revenue;
+};
+int main()
+{
+    Sales_data A;
+    string null_book = "9-999-99999-9";
+    A.combine(null_book);
+    return 0;
+}
+~~~
+
+这其中也包含了转换构造函数，同时`null_book`隐式的从`string`转换到`Sales_data`类。但是**只允许一步类类型转换**。
+
+但是这个过程中生成的`Sales_data`类的`null_book`将值添加到`A`里面之后被抛弃。
+
+有时候我们为了避免隐式的类类型转换，我们可以在构造函数前面加上`explicit`声明，声明之后的类构造函数只能用于直接初始化，此时我们可以使用显示的构造函数，
+
+~~~c++
+A.combine(Sales_data(null_book));
+~~~
+
+`标准库中含有显示构造函数的类`
+
+* 接受一个单参数的`const char *`的`string`构造函数，不是`explicit`的
+* 接受一个容量参数的`vector`构造函数是`explicit`的。
+
+## 聚合类
 
 
 
