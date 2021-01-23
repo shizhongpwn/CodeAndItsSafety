@@ -86,3 +86,4 @@ public class ReflectionStudy {
 Thread.setPriority(int n);// 1-10 默认为5
 ~~~
 
+优先级高的线程被操作系统调度的优先级较高，操作系统对高优先级线程可能调度更频繁，但我们决不能通过设置优先级来确保高优先级的线程一定会先执行。
