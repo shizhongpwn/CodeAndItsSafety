@@ -325,6 +325,124 @@ A.combine(Sales_data(null_book));
 
 ## 聚合类
 
+聚合条件：
+
+* 所有成员都是`public`的
+* 没有定义任何构造函数
+* 没有类内初始值
+* 没有基类，也没有`virtual`函数。
+
+`字面值常量`
+
+数据成员都是字面值类型的`聚合类`就是字面值常量类。
+
+或者满足以下要求：
+
+* 数据成员必须是字面值类型的。
+* 类必须至少含有一个`constexpr`构造函数
+* 如果一个数据成员含有类内初始值，则内置类型成员的初始值必须是一条常量表达式。或者如果成员属于某种类类型，则初始值必须使用成员自己的`constexpr`构造函数。
+* 类必须使用析构函数的默认定义，该成员负责销毁类的对象。
+
+constexpr构造函数
+
+![image-20210123101155809](C++primer-第七章-类.assets/image-20210123101155809.png)
+
+`类的静态成员`
+
+定义的时候使用`static`关键字
+
+~~~c++
+#include <iostream>
+#include <vector>
+
+using namespace std;
+class Account{
+public:
+    void calculate(){amount+= amount*interestRate;}
+    static double rate(){return interestRate;}
+    static void rate(double );
+
+private:
+    string owner;
+    double amount;
+    static double interestRate;
+    static double initRate();
+};
+int main()
+{
+    return 0;
+}
+~~~
+
+类内的静态成员存在于任何对象之外，对象中不包含任何与静态数据成员有关的数据。
+
+* 类都存在两个数据成员`owner`和`amount`
+* 但是只存在一个`interestRate`对象被所有的`Account`对象共享。
+
+`使用类的静态成员`
+
+~~~c++
+double r;
+r = Account::rete();
+~~~
+
+`定义类静态成员`
+
+~~~c++
+void Account::rate(double newRate)
+{
+	interestRate = newRate;
+}
+~~~
+
+`static`关键字只出现在类内部的声明语句。同时静态数据成员不属于类的任何一个对象，所以不由类的构造函数初始化。
+
+`静态成员能用于某些场景，但是普通成员不可以`
+
+~~~c++
+class Bar{
+	public:
+		//...
+	private:
+		static Bar mem1; //静态成员可以是不完全类型
+		Bar *mem2; //指针成员可以是不完全类型
+		Bar mem3; // 数据成员必须是完整类型，所以这个错误
+};
+~~~
+
+同时静态成员可以作为默认实参，但是普通成员不可以
+
+~~~c++
+class Screen{
+	public:
+	 Screen& clear(char = bkground);
+	private:
+		static const char bkground;
+}
+~~~
+
+普通成员不可以作为默认的实参，因为它本事就是对象的一部分，这么做的结果是无法真正提供一个对象以便从中获取成员的值，最终将引发错误。
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
