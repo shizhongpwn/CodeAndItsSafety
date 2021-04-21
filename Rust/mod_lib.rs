@@ -30,7 +30,6 @@ pub fn eat_at_restaurant() {
     println!("I'd like {} toast please", meal.toast);
     let order1 = back_of_house::Appetizer::Soup; //因为该枚举类型是公有的，所以我们可以直接使用
     let order2 = back_of_house::Appetizer::Salad;
-
 }
 mod front_of_house {
     pub mod hostings { //如果只在子模块这里加了pub，那么build的时候依然报错，因为只是使得模块公有，但是其内容还是私有的
@@ -70,6 +69,20 @@ mod back_of_house {
         Soup,
         Salad
     }
-
 }
+/*
+    最终，为了不再引用模块间函数时总是需要写很长的路径，Rust引入了use关键字,比如：
+    use front_of_house::hostings;
+    同时Rust也提供了as关键字来简化记忆：
+    use front_of_house::hostings as Our_hostings;
+    但是当使用use关键字将名称导入作用域时，新的作用域中，可用名称都是私有的，如果为了让你编写的代码能够像在
+    自己的作用域内引用这些类型，可以结合pub和use，这就使得外部代码也可以调用导入作用域中的内容，不然的话，只在
+    本模块可以调用，而外部代码不能调用。
+    pub use front_of_house::hostings;
+    嵌套路径：
+    use std::{cmp::Ordering, io};
+    use std::io::{self, Write}; self代表io模块本身
+    将包中所有的公有项引入作用域：
+    use std::io::*;
+*/
 
