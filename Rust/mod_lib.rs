@@ -24,6 +24,13 @@ pub fn eat_at_restaurant() {
     //eat_at_restaurant()函数被定义在同一crate，这意味着我们可以使用crate作为起始的绝对路劲
     front_of_house::serving::take_payment(); //使用相对路径调用函数
     //因为front_of_house模块树和eat_at_restaurant()函数定义在同一层级，所以可以使用相对路径调用
+    let mut meal = back_of_house::Breakfast::summer("Rye");
+    meal.toast = String::from("Wheat"); //因为toast是pub属性的，此时才可以访问
+    //meal.seasonal_fruit = String::from("error"); 这里会报错，因为访问了私有的字段
+    println!("I'd like {} toast please", meal.toast);
+    let order1 = back_of_house::Appetizer::Soup; //因为该枚举类型是公有的，所以我们可以直接使用
+    let order2 = back_of_house::Appetizer::Salad;
+
 }
 mod front_of_house {
     pub mod hostings { //如果只在子模块这里加了pub，那么build的时候依然报错，因为只是使得模块公有，但是其内容还是私有的
@@ -36,6 +43,7 @@ mod front_of_house {
         pub fn take_payment() {}
     }
 }
+// 创建公有结构体和枚举
 fn server_order() {}
 mod back_of_house {
     fn fix_incorrect_order() {
@@ -43,4 +51,25 @@ mod back_of_house {
         super::server_order(); //通过使用super，可以引用父模块中的内容
     }
     fn cook_order() {}
+    pub struct Breakfast {
+        pub toast: String,
+        seasonal_fruit: String,
+    }
+    impl Breakfast {
+        pub fn summer(toast: &str) -> Breakfast {//因为Breakfast具有私有字段，所以需要一个公共的关联函数来构造Breakfast的实例，
+                                                //如果没有这个函数，那么在eat_at_restaurant函数中就无法构造Breakfast结构体
+                                                //因为我们不能在eat_at_restaurant函数中设置私有字段的值
+            Breakfast {
+                toast: String::from(toast),
+                seasonal_fruit: String::from("peaches")
+            }
+        }
+    }
+    //枚举和结构体有很大不同，如果我们把一个枚举类型设置为公有的，那么他的所有成员都是公有的
+    pub enum Appetizer {
+        Soup,
+        Salad
+    }
+
 }
+
