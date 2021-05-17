@@ -1,0 +1,51 @@
+/*
+    最简单的智能指针时box,其类型是Box<T>。 box允许你将一个值放在堆上而不是栈上面，留在栈上面的是指向堆的指针
+    Rust需要在编译的时候知道类型占用多少空间，一种无法在编译的时候知道大小的类型是递归类型，所以rust不知道递归类型需要多少空间
+    但是box有一个已知的大小，所以通过在循环类型定义中插入box，就可以创建递归类型了。
+
+ */
+/*
+    为了启动多所有权，Rust有一个叫做Rc<T>的类型，其名称为引用计数的缩写，引用计数的缩写，引用计数意味着记录一个值引用的数量来知晓这个值是否被利用，但是Rc<T>必须只能在单线程的条件下使用
+ */
+/*
+    不同于Rc<T>, RefCell<T> 代表其数据的唯一的所有权。
+    对于引用和 Box<T>，借用规则的不可变性作用于编译时。对于 RefCell<T>，这些不可变性作用于 运行时。对于引用，如果违反这些规则，会得到一个编译错误。而对于 RefCell<T>，如果违反这些规则程序会 panic 并退出。
+ */
+use std::ops::Deref;
+use std::rc::Rc;
+enum List {
+    Cons(i32, Rc<List>),
+    Nil
+}
+use crate::List::{Cons, Nil};
+
+fn main() {
+    let x = 5;
+    let y = MyBox::new(x);
+    assert_eq!(5, x);
+    assert_eq!(5, *y);  // 为了实现解引用功能，必须实现Deref trait
+    //当我们输入 *y 时，Rust 事实上在底层运行了如下代码：*(y.deref())
+    let a = Rc::new(Cons(5, Rc::new(Cons(10, Rc::new(Nil))))); // 这里就实现了共享数据
+    let b = Cons(3, Rc::clone(&a));   // 和平常的clone实现那样对所有数据进行深度拷贝不同，Rc::clone只会增加引用计数，这并不会花费多少时间，深度拷贝则会耗费更多的时间
+    println!("count after creating b = {}", Rc::strong_count(&a));
+    {
+        let c = Cons(4, Rc::clone(&a));
+        println!("count after creating b = {}", Rc::strong_count(&a)); //strong_count方法会返回当前的引用计数
+    }
+    println!("count after creating b = {}", Rc::strong_count(&a));
+}
+struct MyBox<T>(T);
+impl <T> MyBox<T> {
+    fn new(x: T) -> MyBox<T> {
+        MyBox(x)
+    }
+}
+
+impl <T> Deref for MyBox<T> {
+    type Target = T; // 定义了用于次trait的关联类型，关联类型是一个稍有不同的定义泛型参数的方法
+    fn deref(&self) -> &T {
+        &self.0 // deref 方法体中写入了 &self.0，这样 deref 返回了我希望通过 * 运算符访问的值的引用。示例 15-9 中的 main 函数中对 MyBox<T> 值的 * 调用现在可以编译并能通过断言了！
+    }
+}
+
+
