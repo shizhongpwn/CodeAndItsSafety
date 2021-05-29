@@ -5,14 +5,15 @@ use std::os::macos::raw::stat;
 use std::thread;
 use std::time::Duration;
 use WebServer::ThreadPool;
+
 /*
     TcpListener用于监听TCP连接
  */
 fn main() {
     let listener = TcpListener::bind("127.0.0.1:7878").unwrap(); // bind返回Result<T, E>，这表明可能会绑定失败
     let pool= ThreadPool::new(4);
-    for stream in listener.incoming() { // incoming方法返回一个迭代器,提供TcpStream类型的流，这个for循环会以此处理每个连接供我们处理
-        let stream = stream.unwrap();
+    for stream in listener.incoming().take(2) { // incoming方法返回一个迭代器,提供TcpStream类型的流，这个for循环会以此处理每个连接供我们处理
+        let stream = stream.unwrap();        // take(2) 表示服务器只接受两个请求，这只是为了测试ThreadPool的drop是否正常工作。
         pool.execute(|| {
             hand_connection(stream);
         });
